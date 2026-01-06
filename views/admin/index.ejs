@@ -1,0 +1,23 @@
+<h3>Sign In</h3>
+<h4>Try it out : Register and Login</h4>
+<br>
+<!-- error message -->
+<% if (error) { %>
+    <div class="alert alert-error">
+    <%= error %>
+    </div>
+<% } %>
+<br>
+<!-- sign in -->
+<form action="/admin" method ="POST">
+    <label for="username"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" name="username">
+
+    <label for="password"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="password">
+    <div class="auth-buttons">
+        <input type="submit" value="Login" class="btn">
+        <!-- <a href="/admin/register" class="btn">Register</a> -->
+        <button type="button" class="btn" id="register_btn">Register</button>
+    </div>
+</form>
