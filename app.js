@@ -18,6 +18,15 @@ app.set('trust proxy', 1);
 // process.env.port is for publishing online
 const PORT = process.env.PORT || 5000;
 
+// health
+app.get('/health', (req, res) => {
+    res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: Date.now()
+    });
+});
+
 // Middleware
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
