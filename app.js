@@ -17,9 +17,6 @@ const app = express();
 // process.env.port is for publishing online
 const PORT = process.env.PORT || 5000;
 
-// Connect to DB
-connectDB();
-
 // Middleware
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());
@@ -63,6 +60,16 @@ app.locals.isActiveRoute = isActiveRoute;
 app.use('/',require('./server/routes/main'))
 app.use('/',require('./server/routes/admin'))
 
-app.listen(PORT,()=>{
-    console.log(`App listening on port: ${PORT}`);
-})
+const startServer = async () => {
+    try {
+        await connectDB();
+        app.listen(PORT, () => {
+            console.log(`App listening on port: ${PORT}`);
+        });
+    } catch (err) {
+        console.error("Server failed to start:", err);
+        process.exit(1);
+    }
+};
+
+startServer();
