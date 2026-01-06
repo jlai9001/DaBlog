@@ -13,6 +13,7 @@ const connectDB = require('./server/config/db');
 const {isActiveRoute} = require('./server/helpers/routeHelpers');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // process.env.port is for publishing online
 const PORT = process.env.PORT || 5000;
@@ -42,6 +43,7 @@ app.use(session({
     cookie: {
         httpOnly: true,
         sameSite: 'lax',
+        secure: 'auto',
         maxAge: 1000 * 60 * 60 // 1 hour
     }
     //cookie exp : {maxAge: new Date (Date.now()+(3600000))}
