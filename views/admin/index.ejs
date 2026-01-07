@@ -10,9 +10,9 @@
 <br>
 <!-- sign in -->
 <form action="/admin" method ="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label for="username"><b>Username</b></label>
     <input type="text" placeholder="Enter Username" name="username">
-
     <label for="password"><b>Password</b></label>
     <input type="password" placeholder="Enter Password" name="password">
     <div class="auth-buttons">

@@ -1,7 +1,7 @@
 //express server
 require('dotenv').config();
 
-
+const {csrfSync} =  require('csrf-sync');
 const express = require ('express');
 const expressLayout = require('express-ejs-layouts');
 const methodOverride = require('method-override');
@@ -59,6 +59,30 @@ app.use(session({
     }
     //cookie exp : {maxAge: new Date (Date.now()+(3600000))}
 }));
+
+// middleware protection
+const {
+    csrfSynchronisedProtection,
+    generateToken
+    } = csrfSync({
+    getTokenFromRequest: (req) => {
+    return req.body?._csrf;
+    }
+});
+
+// middleware protection route
+app.use((req, res, next) => {
+    if (req.path === '/health') {
+    return next();
+    }
+    return csrfSynchronisedProtection(req, res, next);
+});
+
+// expose token to EJS views
+app.use((req, res, next) => {
+    res.locals.csrfToken = generateToken(req);
+    next();
+});
 
 // create public folder
 app.use(express.static('public'));
