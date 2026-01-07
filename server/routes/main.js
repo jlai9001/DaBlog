@@ -40,9 +40,15 @@ router.post('/search', async (req,res)=>{
         title: "Search",
         description: "Simple Blog created with NodeJs, Express & MongoDb."
         }
-        let searchTerm = req.body.searchTerm;
+        let searchTerm = req.body.searchTerm || '';
+        if (!searchTerm.trim()) {
+            return res.render('search', {
+            data: [],
+            locals
+        });
+}
         // remove all special characters
-        const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g,"")
+        const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9 ]/g,"")
         const data = await Post.find({
             $or: [
                 {title: {$regex: new RegExp(searchNoSpecialChar,'i') }},
