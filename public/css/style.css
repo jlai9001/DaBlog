@@ -325,6 +325,7 @@ textarea{
 .admin-post-controls {
     display: flex;
     gap: 6px;
+    margin-left: auto;   /* ⬅️ THIS forces right alignment */
     flex-shrink: 0;
 }
 
@@ -346,7 +347,6 @@ textarea{
 .admin-posts li {
     display: flex;
     align-items: center;
-    gap: 10px;
     padding: 10px 0;
 }
 

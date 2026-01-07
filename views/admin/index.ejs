@@ -12,9 +12,25 @@
 <form action="/admin" method ="POST">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label for="username"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username" name="username">
+    <input
+        type="text"
+        placeholder="Enter Username"
+        name="username"
+        autocapitalize="none"
+        autocomplete="new-password"
+        autocorrect="off"
+        spellcheck="false"
+    >
     <label for="password"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="password">
+    <input
+        type="password"
+        placeholder="Enter Password"
+        name="password"
+        autocapitalize="none"
+        autocomplete="new-password"
+        autocorrect="off"
+        spellcheck="false"
+    >
     <div class="auth-buttons">
         <input type="submit" value="Login" class="btn">
         <button type="button" class="btn" id="register_btn">Register</button>
