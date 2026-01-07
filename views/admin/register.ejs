@@ -1,9 +1,9 @@
-<!-- register -->
 <h3>Register</h3>
+<!-- error message -->
 <% if (error) { %>
-<div class="alert alert-error">
-<%= error %>
-</div>
+    <div class="alert alert-error">
+        <%= error %>
+    </div>
 <br>
 <% } %>
 <form action="/admin/register" method ="POST">
