@@ -87,6 +87,12 @@ router.get('/edit-post/:id', authMiddleware, async (req,res) => {
 router.post('/admin', async (req,res) => {
     try {
         const {username,password} = req.body;
+        if (!username || !password) {
+            return res.render('admin/index', {
+            layout: adminLayout,
+            error: 'Please enter a valid username and password'
+            });
+        }
         // check if user name is available to login (exists in db)
         const user = await User.findOne({username})
         // if don't get user
@@ -193,6 +199,13 @@ router.put('/edit-post/:id', authMiddleware, async (req,res) => {
 router.post('/admin/register', async (req,res) => {
     try {
         const {username,password} = req.body;
+        if (!username || !password) {
+            return res.render('admin/register', {
+            layout: adminLayout,
+            error: 'Please enter a valid username and password',
+            csrfToken: req.csrfToken()
+            });
+        }
         const hashedPassword = await bcrypt.hash(password,10);
         try{
             const user = await User.create ({username,password:hashedPassword});
@@ -201,14 +214,14 @@ router.post('/admin/register', async (req,res) => {
             if (error.code === 11000){
                 return res.render('admin/register', {
                 layout: adminLayout,
-                error: "Please choose another username — it's already taken."
+                error: "Please choose another username — it's already taken.",
+                csrfToken: req.csrfToken()
             });
             }
         }
     } catch (error) {
         console.log(error);
     }
-
 });
 
 // admin - delete post
