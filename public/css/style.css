@@ -311,6 +311,23 @@ textarea{
     margin: 0;
 }
 
+/* Truncated title */
+.admin-post-title {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: underline;
+}
+
+/* Buttons never shrink or wrap */
+.admin-post-controls {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
 .admin-post-controls form {
     display: inline-block;
 }
@@ -328,7 +345,8 @@ textarea{
 
 .admin-posts li {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
     padding: 10px 0;
 }
 

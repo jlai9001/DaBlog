@@ -9,8 +9,26 @@
 <form action="/admin/register" method ="POST">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label for="username"><b>Username</b></label>
-    <input type="text" placeholder="Enter Username" name="username">
+    <input
+        type="text"
+        name="username"
+        placeholder="Enter Username"
+        autocapitalize="none"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        inputmode="text"
+    >
+
     <label for="password"><b>Password</b></label>
-    <input type="password" placeholder="Enter Password" name="password">
+    <input
+        type="password"
+        name="password"
+        placeholder="Enter Password"
+        autocapitalize="none"
+        autocomplete="new-password"
+        autocorrect="off"
+        spellcheck="false"
+    >
     <input type="submit" value="Register" class="btn">
 </form>
