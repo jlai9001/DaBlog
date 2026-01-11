@@ -19,14 +19,14 @@ const authMiddleware = async (req,res, next) => {
     try {
         // verify token
         const decoded = jwt.verify(token,jwtSecret);
-        // Load user (only username)
-        const user = await User.findById(decoded.userId).select('username');
+        // Load user (id, username, role)
+        const user = await User.findById(decoded.userId).select('_id username role');
         if (!user) {
-            res.clearCookie('token');
-            return res.redirect('/admin');
-            }
+        res.clearCookie('token');
+        return res.redirect('/admin');
+        }
         // make user available everywhere
-        req.userId = decoded.userId;
+        req.user = user;
         res.locals.currentUser = user;
         return next();
     } catch(error){
@@ -64,24 +64,34 @@ router.get('/admin', (req, res) => {
 
 // Admin - Get Post Information
 
-router.get('/edit-post/:id', authMiddleware, async (req,res) => {
+router.get('/edit-post/:id', authMiddleware, async (req, res) => {
     try {
         const locals = {
-            title: "Edit Post",
-            description: "Free NodeJs User Management System",
+        title: "Edit Post",
+        description: "Free NodeJs User Management System",
         };
 
-        const data = await Post.findOne({_id:req.params.id});
-        res.render('admin/edit-post',{
-            locals,
-            data,
-            layout: adminLayout
-        })
+    const query =
+        req.user.role === 'admin'
+        ? { _id: req.params.id }
+        : { _id: req.params.id, author: req.user._id };
+
+    const post = await Post.findOne(query);
+
+    if (!post) {
+        return res.status(403).redirect('/admin/dashboard');
+    }
+
+    res.render('admin/edit-post', {
+        locals,
+        data: post,
+        layout: adminLayout
+    });
     } catch (error) {
-        console.log(error);
+    console.log(error);
+    res.redirect('/admin/dashboard');
     }
 });
-
 // Admin - Check Login
 
 router.post('/admin', async (req,res) => {
@@ -111,7 +121,7 @@ router.post('/admin', async (req,res) => {
                 error: 'Invalid username or password'
             });
         }
-        const token = jwt.sign({userId:user._id}, jwtSecret )
+        const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '1h' });
         res.cookie('token',token,{httpOnly:true});
         res.redirect('/admin/dashboard');
     } catch (error) {
@@ -127,7 +137,14 @@ router.get('/admin/dashboard', authMiddleware, async (req,res) => {
             title: 'Dashboard',
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         }
-        const data = await Post.find();
+        let data;
+
+        if (req.user.role === 'admin') {
+        data = await Post.find().sort({ createdAt: -1 });
+        } else {
+        data = await Post.find({ author: req.user._id }).sort({ createdAt: -1 });
+        }
+
         res.render('admin/dashboard',{
             locals,
             data,
@@ -146,10 +163,8 @@ router.get('/add-post', authMiddleware, async (req,res) => {
             title: 'Add Post',
             description: 'Simple Blog created with NodeJs, Express & MongoDb.'
         }
-        const data = await Post.find();
         res.render('admin/add-post',{
             locals,
-            data,
             layout:adminLayout
         });
     }catch(error){
@@ -159,38 +174,46 @@ router.get('/add-post', authMiddleware, async (req,res) => {
 
 // Admin - Save New Post to DB
 
-router.post('/add-post', authMiddleware, async (req,res) => {
-    try{
-        // insert into DB
-        try{
-            const newPost = new Post({
-                title: req.body.title,
-                body: req.body.body
-            });
-            await Post.create(newPost);
-            return res.redirect('/admin/dashboard');
-        } catch (error) {
-            console.log(error);
-        }
-        res.redirect('/admin/dashboard');
-    }catch(error){
-        console.log(error);
+router.post('/add-post', authMiddleware, async (req, res) => {
+    try {
+    const newPost = new Post({
+        title: req.body.title,
+        body: req.body.body,
+        author: req.user._id
+    });
+
+    await Post.create(newPost);
+    res.redirect('/admin/dashboard');
+    } catch (error) {
+    console.log(error);
+    res.redirect('/admin/dashboard');
     }
 });
 
 // Admin - Edit Post
 
-router.put('/edit-post/:id', authMiddleware, async (req,res) => {
-    try{
-        await Post.findByIdAndUpdate(req.params.id,{
-        title: req.body.title,
-        body: req.body.body,
-        updatedAt: Date.now()
-        })
-        // return to dashboard
-        res.redirect(`/admin/dashboard`);
-    }catch(error){
-        console.log(error);
+router.put('/edit-post/:id', authMiddleware, async (req, res) => {
+    try {
+    const query =
+        req.user.role === 'admin'
+        ? { _id: req.params.id }
+        : { _id: req.params.id, author: req.user._id };
+
+    const post = await Post.findOne(query);
+
+    if (!post) {
+        return res.status(403).redirect('/admin/dashboard');
+    }
+
+    post.title = req.body.title;
+    post.body = req.body.body;
+    post.updatedAt = Date.now();
+
+    await post.save();
+    res.redirect('/admin/dashboard');
+    } catch (error) {
+    console.log(error);
+    res.redirect('/admin/dashboard');
     }
 });
 
@@ -226,14 +249,26 @@ router.post('/admin/register', async (req,res) => {
 
 // admin - delete post
 
-router.delete('/delete-post/:id', authMiddleware, async (req,res) => {
-    try{
-        await Post.deleteOne({_id:req.params.id});
-        res.redirect('/admin/dashboard');
-    } catch (error){
-        console.log(error);
+router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
+    try {
+    const query =
+        req.user.role === 'admin'
+        ? { _id: req.params.id }
+        : { _id: req.params.id, author: req.user._id };
+
+    const post = await Post.findOne(query);
+
+    if (!post) {
+        return res.status(403).redirect('/admin/dashboard');
     }
-});
+
+    await Post.deleteOne({ _id: post._id });
+    res.redirect('/admin/dashboard');
+    } catch (error) {
+    console.log(error);
+    res.redirect('/admin/dashboard');
+    }
+    });
 
 // admin - logout
 
@@ -256,7 +291,7 @@ router.get('/admin/register',(req,res)=>{
 router.get('/admin/welcome',(req,res)=>{
     res.render('admin/welcome',{
         layout:adminLayout,
-        message:'Your account was created succesfully.'
+        message:'Your account was created successfully.'
     });
 });
 
