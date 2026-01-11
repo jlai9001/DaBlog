@@ -219,31 +219,58 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
 
 // Admin - Register
 
-router.post('/admin/register', async (req,res) => {
+router.post('/admin/register', async (req, res) => {
     try {
-        const {username,password} = req.body;
-        if (!username || !password) {
-            return res.render('admin/register', {
-            layout: adminLayout,
-            error: 'Please enter a valid username and password',
-            csrfToken: req.csrfToken()
-            });
-        }
-        const hashedPassword = await bcrypt.hash(password,10);
-        try{
-            const user = await User.create ({username,password:hashedPassword});
-            return res.redirect('/admin/welcome');
-        } catch(error){
-            if (error.code === 11000){
-                return res.render('admin/register', {
-                layout: adminLayout,
-                error: "Please choose another username — it's already taken.",
-                csrfToken: req.csrfToken()
-            });
-            }
-        }
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.render('admin/register', {
+        layout: adminLayout,
+        error: 'Please enter a valid username and password',
+        csrfToken: req.csrfToken()
+        });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    try {
+        // Create user (role defaults to "user")
+        const user = await User.create({
+        username,
+        password: hashedPassword
+        });
+
+        // AUTO LOGIN: create JWT and set cookie
+        const token = jwt.sign(
+        { userId: user._id },
+        jwtSecret,
+        { expiresIn: '1h' }
+        );
+
+        res.cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production'
+        });
+
+        // Redirect to welcome page (now authenticated)
+        return res.redirect('/admin/welcome');
+
     } catch (error) {
-        console.log(error);
+        if (error.code === 11000) {
+        return res.render('admin/register', {
+            layout: adminLayout,
+            error: "Please choose another username — it's already taken.",
+            csrfToken: req.csrfToken()
+        });
+        }
+
+        throw error;
+    }
+
+    } catch (error) {
+    console.log(error);
+    res.redirect('/admin/register');
     }
 });
 
