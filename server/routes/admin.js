@@ -302,7 +302,7 @@ router.delete('/delete-post/:id', authMiddleware, async (req, res) => {
 router.get('/logout', (req,res) => {
     res.clearCookie('token');
     //res.json({message: 'Logout Succesful'});
-    res.redirect('/');
+    res.redirect('/admin');
 });
 
 // admin - register
